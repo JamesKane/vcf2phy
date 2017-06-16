@@ -17,7 +17,7 @@ object Converter extends App {
     val matrix = new MatrixBuilder(inputPathName).parseVCF()
 
     logger.info("Constructing PHYLIP data")
-    var fw: BufferedWriter = _
+    var fw: BufferedWriter = null
     try {
       fw = new BufferedWriter(
         new OutputStreamWriter(
