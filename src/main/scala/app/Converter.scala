@@ -8,6 +8,7 @@ import java.util.logging.Logger
 object Converter extends App {
   val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
 
+  // TODO:  Replace this with a more robust argument system
   if(args.length < 3 || args(1) == "-h") {
     println(s"Usage: ${args(0)} vcf_file_path phy_output_path")
   }  else {
