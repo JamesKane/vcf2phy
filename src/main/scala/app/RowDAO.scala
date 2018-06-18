@@ -25,7 +25,7 @@ object RowDAO {
     else if (vc.isMNP) "mnp"
     else ""
 
-    if (alt.nonEmpty) {
+    if (alt.nonEmpty && vc.isSNP && vc.isNotFiltered && vc.getNoCallCount / vc.getNSamples.toDouble < 0.1) {
       val rowDAO = RowDAO(key, vc.getContig, start, ref, alt, vType, ParMap())
       vc.getGenotypes.toList.foreach(gt => {
         val status = gt.getGenotypeString(true).replace("/", "").sorted

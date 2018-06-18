@@ -13,7 +13,7 @@ class MatrixBuilder(source: String) {
 
   def parseVCF() = {
     val reader = AbstractFeatureReader.getFeatureReader(source, new VCFCodec, false)
-    logger.info(s"Reading vcf: ${source}")
+    logger.info(s"Reading vcf: $source")
 
     val header = reader.getHeader.asInstanceOf[VCFHeader]
     val kits = header.getSampleNamesInOrder.toList
