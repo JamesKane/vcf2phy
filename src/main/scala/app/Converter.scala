@@ -7,7 +7,6 @@ import java.util.logging.Logger
 
 object Converter extends App {
   val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
-  val bases = Set("A", "C", "G", "T")
 
   // TODO:  Replace this with a more robust argument system
   if (args.length < 3 || args(1) == "-h") {
@@ -25,7 +24,7 @@ object Converter extends App {
         new OutputStreamWriter(
           new FileOutputStream(outputPathName), Charset.forName("UTF-8").newEncoder()))
 
-      val names = matrix.sampleNames.filter(taxa => matrix.rows.map(_.status(taxa)).exists(bases.contains))
+      val names = matrix.sampleNames.filter(taxa => matrix.rows.map(_.status(taxa)).exists(IUPAC.validBases.contains))
       if (names.size != matrix.sampleNames.size) {
         logger.warning("Sample(s) removed from cohort: " + (matrix.sampleNames.toSet - names).mkString(", "))
       }

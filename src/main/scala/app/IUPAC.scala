@@ -1,6 +1,7 @@
 package app
 
 object IUPAC {
+  val validBases = Set("A", "C", "G", "T", "U")
 
   // The common IUPAC nucleotide codes sourced from http://www.bioinformatics.org/sms/iupac.html
   val nucleotide = Map[String, String](
