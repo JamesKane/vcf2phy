@@ -7,6 +7,7 @@ import java.util.logging.Logger
 
 object Converter extends App {
   val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
+  val bases = Set('A', 'C', 'G', 'T')
 
   // TODO:  Replace this with a more robust argument system
   if(args.length < 3 || args(1) == "-h") {
@@ -33,7 +34,12 @@ object Converter extends App {
         // TODO: Consider interleaving with a defined column count and group spacing
         val calls = matrix.rows.map(r => r.status(k)).mkString("")
 
-        fw.write(s"$label$calls" + System.lineSeparator())
+        if(calls.forall(!bases.contains(_))) {
+          logger.warning(s"$k has no A, C, G, or T bases!")
+        } else {
+          fw.write(s"$label$calls" + System.lineSeparator())
+        }
+
       })
     } finally {
       fw.close()

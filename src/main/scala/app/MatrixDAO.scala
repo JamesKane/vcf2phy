@@ -9,14 +9,15 @@ import scala.collection.JavaConversions._
 case class MatrixDAO(sampleNames: List[String], rows: List[RowDAO])
 
 class MatrixBuilder(source: String) {
+
   private var rows: List[RowDAO] = List()
 
   def parseVCF() = {
     val reader = AbstractFeatureReader.getFeatureReader(source, new VCFCodec, false)
-    logger.info(s"Reading vcf: $source")
 
     val header = reader.getHeader.asInstanceOf[VCFHeader]
     val kits = header.getSampleNamesInOrder.toList
+    logger.info(s"Reading vcf: $source containing ${kits.size} organisms")
 
     val it = reader.iterator()
     while (it.hasNext) {

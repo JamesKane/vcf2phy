@@ -25,16 +25,28 @@ object RowDAO {
     else if (vc.isMNP) "mnp"
     else ""
 
-    if (alt.nonEmpty && vc.isSNP && vc.isNotFiltered && vc.getNoCallCount / vc.getNSamples.toDouble < 0.1) {
+    if (alt.nonEmpty && vc.isSNP && vc.isNotFiltered && belowNoCallRatio(vc)) {
       val rowDAO = RowDAO(key, vc.getContig, start, ref, alt, vType, ParMap())
       vc.getGenotypes.toList.foreach(gt => {
         val status = gt.getGenotypeString(true).replace("/", "").sorted
         // TODO:  Need to deal with indels
         rowDAO.status.put(gt.getSampleName, IUPAC.nucleotide(status))
       })
-      Some(rowDAO)
+      Some(rowDAO).filter(belowHeterozygousRatio)
     } else {
       None
     }
+  }
+
+  // TODO: Expose these ratios as command line arguments
+  private def belowNoCallRatio(vc: VariantContext) = {
+    vc.getNoCallCount / vc.getNSamples.toDouble < 0.1
+  }
+
+  private val alleles = Set("A", "C", "G", "T", "?", "-")
+  private def belowHeterozygousRatio(row: RowDAO) = {
+    val numSamples = row.status.size
+    val heterozygosityScore = row.status.values.count(sample => !alleles.contains(sample))
+    heterozygosityScore / numSamples.toDouble < 0.2
   }
 }
