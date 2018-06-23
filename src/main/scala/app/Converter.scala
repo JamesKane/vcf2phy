@@ -9,25 +9,32 @@ object Converter extends App {
   val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
 
   // TODO:  Replace this with a more robust argument system
-  if (args.length < 3 || args(1) == "-h") {
-    println(s"Usage: ${args(0)} vcf_file_path phy_output_path")
+  if (args.length < 4 || args(1) == "-h") {
+    println(s"Usage: ${args(0)} vcf_file_path phy_output_path index_out_path")
   } else {
     val inputPathName = args(1)
     val outputPathName = args(2)
+    val indexPathName = args(3)
 
     val matrix = new MatrixBuilder(inputPathName).parseVCF()
+    logger.info("Validating taxa have calls")
+    val names = matrix.sampleNames.filter(taxa => matrix.rows.map(_.status(taxa)).exists(IUPAC.validBases.contains))
+    if (names.size != matrix.sampleNames.size) {
+      val removed = matrix.sampleNames.toSet.diff(names.toSet)
+      logger.warning("Sample(s) removed from cohort: " + removed.mkString(", "))
+    }
 
     logger.info("Constructing PHYLIP data")
     var fw: BufferedWriter = null
+
     try {
       fw = new BufferedWriter(
         new OutputStreamWriter(
-          new FileOutputStream(outputPathName), Charset.forName("UTF-8").newEncoder()))
+          new FileOutputStream(outputPathName), Charset.forName("UTF-8").newEncoder()
+        )
+      )
 
-      val names = matrix.sampleNames.filter(taxa => matrix.rows.map(_.status(taxa)).exists(IUPAC.validBases.contains))
-      if (names.size != matrix.sampleNames.size) {
-        logger.warning("Sample(s) removed from cohort: " + (matrix.sampleNames.toSet - names).mkString(", "))
-      }
+
       fw.write(s"${names.length} ${matrix.rows.length}" + System.lineSeparator())
       names.foreach(k => {
         // Phylip format requires a 10 character row label for the organism
@@ -40,6 +47,23 @@ object Converter extends App {
       })
     } finally {
       fw.close()
+
+    }
+
+    logger.info("Exporting site map")
+    var indexFW: BufferedWriter = null
+    try {
+      indexFW = new BufferedWriter(
+        new OutputStreamWriter(
+          new FileOutputStream(indexPathName), Charset.forName("UTF-8").newEncoder()
+        )
+      )
+      matrix.rows.foreach(row => {
+        indexFW.write(s"${row.contig}:${row.pos}")
+        indexFW.newLine()
+      })
+    } finally {
+      indexFW.close()
     }
   }
 }
