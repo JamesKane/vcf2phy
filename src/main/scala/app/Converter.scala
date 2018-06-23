@@ -26,7 +26,6 @@ object Converter extends App {
 
     logger.info("Constructing PHYLIP data")
     var fw: BufferedWriter = null
-
     try {
       fw = new BufferedWriter(
         new OutputStreamWriter(
@@ -43,6 +42,7 @@ object Converter extends App {
         // Collect all the calls for the organism to a single string
         // TODO: Consider interleaving with a defined column count and group spacing
         val calls = matrix.rows.map(r => r.status(k)).mkString("")
+
         fw.write(s"$label$calls" + System.lineSeparator())
       })
     } finally {

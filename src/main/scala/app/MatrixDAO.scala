@@ -1,6 +1,7 @@
 package app
 
-import app.Converter.logger
+import java.util.logging.Logger
+
 import htsjdk.tribble.AbstractFeatureReader
 import htsjdk.variant.vcf.{VCFCodec, VCFHeader}
 
@@ -9,7 +10,7 @@ import scala.collection.JavaConversions._
 case class MatrixDAO(sampleNames: List[String], rows: List[RowDAO])
 
 class MatrixBuilder(source: String) {
-
+  val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
   private var rows: List[RowDAO] = List()
 
   def parseVCF() = {

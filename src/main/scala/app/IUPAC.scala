@@ -49,4 +49,6 @@ object IUPAC {
     "*T" -> "-"
   ).withDefaultValue("?")
 
+  def reversed: Map[String, String] = nucleotide.map(p => p._2 -> p._1)
+
 }

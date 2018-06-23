@@ -8,6 +8,7 @@ import scala.collection.JavaConversions._
 
 case class RowDAO(id: String, contig: String, pos: Int, anc: String, der: String,
                   variantType: String, status: ParMap[String, String]) {
+  def samples = status.keys.toList.sorted
 }
 
 object RowDAO {
@@ -47,6 +48,6 @@ object RowDAO {
   private def belowHeterozygousRatio(row: RowDAO) = {
     val numSamples = row.status.size
     val heterozygosityScore = row.status.values.count(sample => !alleles.contains(sample))
-    heterozygosityScore / numSamples.toDouble < 0.2
+    heterozygosityScore / numSamples.toDouble < 0.15
   }
 }
