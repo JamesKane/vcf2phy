@@ -88,7 +88,7 @@ object ClusteredReport extends App {
     //}
   }
 
-  private def writeMatrixRow(fw: BufferedWriter, orderedSamples: List[String], row: RowDAO, anc: String, der: String) = {
+  private def writeMatrixRow(fw: BufferedWriter, orderedSamples: List[String], row: RowDAO, anc: String, der: String): Unit = {
     fw.write(row.contig + "," + row.pos + "," + row.anc + "," + row.der + ",")
     // TODO: Sample name may be truncated when formatted for phylip
     fw.write(orderedSamples.map(n => row.status.getOrElse(n, "?")).mkString(","))

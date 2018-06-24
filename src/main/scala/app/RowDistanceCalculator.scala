@@ -9,9 +9,7 @@ class RowDistanceCalculator {
     Math.sqrt(vectorizedA.zip(vectorizedB).map(p => Math.pow(p._1 + p._2, 2)).sum)
   }
 
-  private def vectorize(row: RowDAO): List[Double] = {
-    row.samples.map(n => alleleDist(row.anc, row.status(n))).toList
-  }
+  private def vectorize(row: RowDAO): List[Double] = row.samples.map(n => alleleDist(row.anc, row.status(n)))
 
   // TODO: This should be replaced with a Markov model
   private def alleleDist(ref: String, obs: String): Double = {

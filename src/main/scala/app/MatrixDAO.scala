@@ -10,10 +10,10 @@ import scala.collection.JavaConversions._
 case class MatrixDAO(sampleNames: List[String], rows: List[RowDAO])
 
 class MatrixBuilder(source: String) {
-  val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
+  private val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
   private var rows: List[RowDAO] = List()
 
-  def parseVCF() = {
+  def parseVCF(): MatrixDAO = {
     val reader = AbstractFeatureReader.getFeatureReader(source, new VCFCodec, false)
 
     val header = reader.getHeader.asInstanceOf[VCFHeader]

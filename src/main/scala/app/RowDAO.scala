@@ -8,7 +8,7 @@ import scala.collection.JavaConversions._
 
 case class RowDAO(id: String, contig: String, pos: Int, anc: String, der: String,
                   variantType: String, status: ParMap[String, String]) {
-  def samples = status.keys.toList.sorted
+  def samples: List[String] = status.keys.toList.sorted
 }
 
 object RowDAO {

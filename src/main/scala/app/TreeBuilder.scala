@@ -59,8 +59,7 @@ class TreeBuilder(edges: List[Edge], nodes: Map[Node, List[DiffSummary]], loci: 
   }
 
   private def flattenDescendants(descEdges: List[Edge]): List[Node] = {
-    val a = descEdges.filter(e => nodes(e.child).nonEmpty)
-    val b = descEdges.toSet -- a
+    val (a, b) = descEdges.partition(e => nodes(e.child).nonEmpty)
     a.map(_.child) ++ b.flatMap(c => flattenDescendants(edges.filter(_.parent == c.child)))
   }
 
