@@ -47,7 +47,6 @@ object Converter extends App {
       })
     } finally {
       fw.close()
-
     }
 
     logger.info("Exporting site map")

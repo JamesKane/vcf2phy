@@ -1,9 +1,12 @@
 package app
 
+import java.util.logging.Logger
+
 import scala.collection.mutable
 
 class TreeVariantDetector(nodeSequences: Map[Node, String], edges: List[Edge]) {
   private val table = new mutable.HashMap[Node, List[DiffSummary]]()
+  val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
 
   def execute(): Map[Node, List[DiffSummary]] = {
     edges.find(_.parent.name == "root") match {
@@ -21,7 +24,10 @@ class TreeVariantDetector(nodeSequences: Map[Node, String], edges: List[Edge]) {
 
     if(children.nonEmpty) {
       children.foreach(child => {
-        table.put(child, SequenceDiffLocator.find(nodeSequences(node), nodeSequences(child)))
+        val nodeSequence = nodeSequences(node)
+        val childSequence = nodeSequences(child)
+        val summaries = SequenceDiffLocator.find(nodeSequence, childSequence)
+        table.put(child, summaries)
         process(child)
       })
     }

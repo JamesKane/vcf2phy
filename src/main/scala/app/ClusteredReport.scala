@@ -4,6 +4,7 @@ import java.io.{BufferedWriter, FileOutputStream, OutputStreamWriter}
 import java.nio.charset.Charset
 import java.util.logging.Logger
 
+
 /**
   * This report builder takes the results from dnamlk to build out a bi-clustered call matrix
   * to verify results prior to importing the tree into reporting systems
@@ -13,15 +14,17 @@ object ClusteredReport extends App {
   val logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)
 
   // TODO:  Fix these
-  if (args.length < 4 || args(1) == "-h") {
-    println(s"Usage: ${args(0)} vcf_file_path phy_output_path index_out_path")
-  } else {
-    val inputPathName = args(1)
-    val outputPathName = args(2)
-    val indexPathName = args(3)
 
-    // TODO: With the site map addition, there's no need to rebuild the source matrix
-    val matrix = new MatrixBuilder(inputPathName).parseVCF()
+  if (args.length < 6 || args(1) == "-h") {
+    println(s"Usage: ${args(0)} vcf_file_path tree_table_path node_sequences_path matrix_path json_tree_path")
+  } else {
+    val vcfPathName = args(1)
+    val treePathName = args(2)
+    val nodeSequencesPathName = args(3)
+    val matrixPathName = args(4)
+    val jsonTreePathName = args(5)
+
+    val matrix = new MatrixBuilder(vcfPathName).parseVCF()
     logger.info("Validating taxa have calls")
     val names = matrix.sampleNames.filter(taxa => matrix.rows.map(_.status(taxa)).exists(IUPAC.validBases.contains))
     if (names.size != matrix.sampleNames.size) {
@@ -31,8 +34,8 @@ object ClusteredReport extends App {
 
     var fw: BufferedWriter = null
     logger.info("Constructing raw Matrix")
-    val (nodes, edges) = new ParseTreeTable().execute("/Users/jkane/Reports/tree.table")
-    val nodeSequences = new NodeSequenceLoader(nodes).execute("/Users/jkane/Reports/node_sequences.txt")
+    val (nodes, edges) = new ParseTreeTable().execute(treePathName)
+    val nodeSequences = new NodeSequenceLoader(nodes).execute(nodeSequencesPathName)
     logger.info("Finding branch variant sites")
     val nodeDiffs = new TreeVariantDetector(nodeSequences, edges).execute()
 
@@ -43,11 +46,11 @@ object ClusteredReport extends App {
     try {
       fw = new BufferedWriter(
         new OutputStreamWriter(
-          new FileOutputStream("/Users/jkane/Reports/test.csv"), Charset.forName("UTF-8").newEncoder()))
+          new FileOutputStream(matrixPathName), Charset.forName("UTF-8").newEncoder()))
       fw.write(",,,," + orderedSamples.mkString(","))
       fw.newLine()
       orderedRows.foreach(summary => {
-        if(summary.index > matrix.rows.size) {
+        if (summary.index > matrix.rows.size) {
           logger.severe("Node sequences do not match gVCF filters!")
         } else {
           val row = matrix.rows(summary.index)
@@ -57,6 +60,32 @@ object ClusteredReport extends App {
     } finally {
       fw.close()
     }
+
+    logger.info("Exporting tree")
+    val tree = new TreeBuilder(edges, nodeDiffs, matrix.rows.map(r => (r.contig, r.pos))).execute()
+    try {
+      fw = new BufferedWriter(
+        new OutputStreamWriter(
+          new FileOutputStream(jsonTreePathName), Charset.forName("UTF-8").newEncoder()))
+
+      fw.write(upickle.default.write(tree))
+    } finally {
+      fw.close()
+    }
+  }
+
+  def writeBranch(fw: BufferedWriter, root: Node, edges: List[Edge], diffs: Map[Node, List[DiffSummary]], matrix: MatrixDAO, i: Int): Unit = {
+    val children = edges.filter(_.parent == root).map(_.child)
+
+    //if(children.nonEmpty) {
+    val events = diffs(root).map(d => {
+      val row = matrix.rows(d.index)
+      s"${row.contig}:${row.pos} ${d.from}->${d.to}"
+    })
+    fw.write("\t" * i + s"${root.name}\t" + events.mkString("|"))
+    fw.newLine()
+    children.foreach(c => writeBranch(fw, c, edges, diffs, matrix, i + 1))
+    //}
   }
 
   private def writeMatrixRow(fw: BufferedWriter, orderedSamples: List[String], row: RowDAO, anc: String, der: String) = {
