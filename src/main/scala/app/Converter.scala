@@ -41,6 +41,7 @@ object Converter extends App {
 
         // Collect all the calls for the organism to a single string
         // TODO: Consider interleaving with a defined column count and group spacing
+        // TODO: This works with Phylip itself, but raxml-ng says the format is broken.  Fix it.
         val calls = matrix.rows.map(r => r.status(k)).mkString("")
 
         fw.write(s"$label$calls" + System.lineSeparator())
